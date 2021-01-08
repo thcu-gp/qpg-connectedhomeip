@@ -23,7 +23,7 @@ SECTIONS
     /* Linkerscript only for contiguous SYS and UCRAM */
     ASSERT(eSYSRAM == sUCRAM, "Non contiguous SYS and UCRAM")
 
-    /* 
+    /*
      * User license is first - only for FLASH programs.
      *
      * BLE/MAC address entries (+0x10) in the user license skipped to
@@ -32,10 +32,44 @@ SECTIONS
     .native_user_license   0x4000000 + 0x10 : { KEEP(*(.native_user_license)); } > FLASH
     .isr_vector : ALIGN(0x100) { KEEP(*(.isr_vector)); } > FLASH
 
-    .text :   { . = ALIGN(4); *(.text)   *(.text.*);  } > FLASH
-    .rodata : { . = ALIGN(4); *(.rodata) *(.rodata.*);} > FLASH
-    .rom :    { . = ALIGN(4); *(.rom)   *(.rom.*);    } > ROM
+    .text :
+    {
+        . = ALIGN(4);
+        *(.text) *(.text.*)
 
+        KEEP(*(.init))
+        KEEP(*(.fini))
+
+        /* .ctors */
+        *crtbegin.o(.ctors)
+        *crtbegin?.o(.ctors)
+        *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+        *(SORT(.ctors.*))
+        *(.ctors)
+
+        /* .dtors */
+        *crtbegin.o(.dtors)
+        *crtbegin?.o(.dtors)
+        *(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+        *(SORT(.dtors.*))
+        *(.dtors)
+
+        *(.rodata) *(.rodata.*)
+        KEEP(*(.eh_frame*))
+    } > FLASH
+
+    .ARM.extab :
+    {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+    } > FLASH
+
+    __exidx_start = .;
+    .ARM.exidx :
+    {
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    } > FLASH
+    __exidx_end = .;
+    .rom :    { . = ALIGN(4); *(.rom)   *(.rom.*);    } > ROM
 
     /* Start of memory to be retained in sleep */
     _sretain = 0x20008000;
@@ -44,9 +78,9 @@ SECTIONS
     .mw_crc 0x20008000 : { . += 0x4; } > RAM
     .crc    0x20008004 : { . += 0x4; } > RAM
     .ret_hw 0x20008008 : { . += 0x1B4; } > RAM
-    .ret_sw 0x200081BC : { . += 0x7B; }  > RAM
+    .ret_sw 0x200081BC : { . += 0x7C; }  > RAM
     ASSERT(. >= 0x200081c0, "gpmicro areas must fall into retention areas")
-    /*      0x20008370-0x2000837F : unused space */
+    .unused_area 0x20008238 : { . += 0x148; } > RAM
     /* PUF RAM Area */
     .pkey   0x20008380 : { . += 0x80;  }  > RAM
     .pufr   0x20008400 : { . += 0x400; }  > RAM
@@ -63,7 +97,41 @@ SECTIONS
     /* Check regions are allocated in lower ram */
     ASSERT(_elower_ram < eSYSRAM, "SYSRAM ram full")
 
-    .data : { . = ALIGN(4); *(.data) *(.data.*);          } > RAM AT > FLASH
+    .data : 
+    { 
+        __data_start__ = .;
+        *(vtable)
+        . = ALIGN (4);
+        *(.data) *(.data.*)
+        PROVIDE (__ram_func_section_start = .);
+        *(.ram)
+        PROVIDE (__ram_func_section_end = .);
+
+        . = ALIGN(4);
+        /* preinit data */
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP(*(.preinit_array))
+        PROVIDE_HIDDEN (__preinit_array_end = .);
+
+        . = ALIGN(4);
+        /* init data */
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP(*(SORT(.init_array.*)))
+        KEEP(*(.init_array))
+        PROVIDE_HIDDEN (__init_array_end = .);
+
+        . = ALIGN(4);
+        /* finit data */
+        PROVIDE_HIDDEN (__fini_array_start = .);
+        KEEP(*(SORT(.fini_array.*)))
+        KEEP(*(.fini_array))
+        PROVIDE_HIDDEN (__fini_array_end = .);
+
+        KEEP(*(.jcr*))
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
+    } > RAM AT > FLASH
     .bss :  { . = ALIGN(4); *(.bss)  *(.bss.*) *(COMMON); } > RAM
     .heap   (NOLOAD) :            { . = ALIGN(4); . += 0x8000; } > RAM
 
@@ -72,7 +140,7 @@ SECTIONS
 
     /* Scroll up to higher ram area for scratchpad variables */
     .higher_ram_noretain (NOLOAD) : {
-        . = (_eretain > sUCRAM) ? ALIGN(4) : (sUCRAM - _eretain); 
+        . = (_eretain > sUCRAM) ? ALIGN(4) : (sUCRAM - _eretain);
         _shigher_ram_noretain = . ;
         *(.higher_ram_noretain) *(.higher_ram_noretain.*);
         _ehigher_ram_noretain = . ;
@@ -113,7 +181,7 @@ SECTIONS
 
     /* using remaining RAM for stack */
     _sstack = _eram;
-    _estack = ORIGIN(RAM) + LENGTH(RAM) - SIZEOF(.higher_ram_noretain);
+    _estack = ORIGIN(RAM) + LENGTH(RAM);
 
     /* check minimum stack size is still available */
     min_stack_size = 0x200;
