@@ -20,13 +20,13 @@
  * INCIDENTAL OR CONSEQUENTIAL DAMAGES,
  * FOR ANY REASON WHATSOEVER.
  *
- * $Change: 163782 $
- * $DateTime: 2021/01/12 10:55:55 $
+ * $Change: 166262 $
+ * $DateTime: 2021/02/12 16:26:03 $
  */
 
-/** @file "qvCHIP.h"
+/** @file "qvCHIP_Ble.h"
  *
- *  CHIP wrapper API
+ *  CHIP BLE wrapper API
  *
  *  Declarations of the BLE specific public functions and enumerations of qvCHIP.
 */
@@ -218,7 +218,8 @@ typedef enum qvCHIP_Ble_AttMsg_ {
 
 typedef enum qvStatus_ {
     QV_STATUS_NO_ERROR = 0,
-    QV_STATUS_BUFFER_TOO_SMALL = 1
+    QV_STATUS_BUFFER_TOO_SMALL = 1,
+    QV_STATUS_INVALID_ARGUMENT = 2
 } qvStatus_t;
 
 typedef enum qvAdvLocation_ {
@@ -418,9 +419,10 @@ qvStatus_t qvCHIP_BleCloseConnection(uint16_t conId);
 /** @brief Returns the MTU parameters for a specified connection ID
  *
  *  @param conId           Id of the connection for which the MTU is wanted.
- *  @return                MTU value for the specified connection.
+ *  @param pMTUSize        pointer set to MTU value for the specified connection.
+ *  @return                INVALID_ARGUMENT if conId or pMTUSize is not valid, otherwise NO_ERROR
 */
-uint16_t qvCHIP_BleGetMTU(uint16_t conId);
+qvStatus_t qvCHIP_BleGetMTU(uint16_t conId, uint16_t * pMTUSize);
 
 /** @brief Writes to an attribute with the specified parameters
  *
