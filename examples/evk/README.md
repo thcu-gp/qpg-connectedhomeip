@@ -4,7 +4,7 @@
 * [Overview](#overview)
 * [Required hardware](#required-hardware)
 	* [Computer and QPG6100 DK board setup](#computer-and-qpg6100-dk-board-setup)
-	* [Install the Android™ CHIPTool application](#install-the-android™-chiptool-application)
+	* [Install the Android™ CHIPTool application](#install-the-android-chiptool-application)
 * [QPG7015M Border Router setup](#qpg7015m-border-router-setup)
 	* [Connect Android mobile device to the Wi-Fi access point](#connect-android-mobile-device-to-the-wi-fi-access-point)
 	* [Form a new Thread network](#form-a-new-thread-network)
