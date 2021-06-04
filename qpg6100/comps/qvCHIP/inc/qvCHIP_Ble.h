@@ -20,8 +20,8 @@
  * INCIDENTAL OR CONSEQUENTIAL DAMAGES,
  * FOR ANY REASON WHATSOEVER.
  *
- * $Change: 168044 $
- * $DateTime: 2021/03/08 11:47:08 $
+ * $Change: 174215 $
+ * $DateTime: 2021/06/03 10:13:53 $
  */
 
 /** @file "qvCHIP_Ble.h"
@@ -388,6 +388,15 @@ extern "C" {
 */
 void qvCHIP_BleInit(qvCHIP_Ble_Callbacks_t* callbacks);
 
+/** @brief Sets the CHIPoBLE service and TX and RX characteristics UUIDs in human-readable order (MSB)
+ *
+ *  @param chipOBLE_UUID   Contains the service UUID to be used.
+ *  @param txChar_UUID     Contains the UUID for TX characteristic of CHIPoBLE service.
+ *  @param rxChar_UUID     Contains the UUID for RX characteristic of CHIPoBLE service.
+ *  @return                Returns NO_ERROR if the operation completed successfully.
+*/
+qvStatus_t qvCHIP_BleSetUUIDs(uint8_t* chipOBLE_UUID, uint8_t* txChar_UUID, uint8_t *rxChar_UUID);
+
 /** @brief Reads back the internally stored device name
  *
  *  @param buf             Buffer where to copy the internally stored device name.
@@ -435,6 +444,15 @@ void qvCHIP_BleWriteAttr(uint16_t conId, uint16_t handle, uint16_t length, uint8
  *  @param data            Pointer to the data to send.
 */
 void qvCHIP_BleSendIndication(uint16_t conId, uint16_t handle, uint16_t length, uint8_t* data);
+
+/** @brief Sends a notification with the specified parameters
+ *
+ *  @param conId           ID of the connection to use to send data.
+ *  @param handle          Handle in the GATT server for the characteristic on which to send the data.
+ *  @param length          Length of the data.
+ *  @param data            Pointer to the data to send.
+*/
+void qvCHIP_BleSendNotification(uint16_t conId, uint16_t handle, uint16_t length, uint8_t* data);
 
 /** @brief Sets minimum and maximum intervals for advertising packets
  *
